@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: banking-demo-app
+  namespace: openshift-gitops
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/linusali/vm-gitops-demo.git
+    path: .
+    targetRevision: HEAD
+    helm:
+      valueFiles:
+        - values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: banking-demo
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
