@@ -1,0 +1,19 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: mifos-env-config
+  namespace: banking-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+immutable: false
+data:
+  FINERACT_DEFAULT_TENANTDB_CONN_PARAMS: ''
+  FINERACT_DEFAULT_TENANTDB_HOSTNAME: mariadb
+  FINERACT_DEFAULT_TENANTDB_TIMEZONE: Asia/Dubai
+  FINERACT_NODE_ID: '1'
+  JAVA_TOOL_OPTIONS: '-Xmx1G'
+  FINERACT_DEFAULT_TENANTDB_PORT: '3306'
+  FINERACT_SERVER_SSL_ENABLED: 'True'
+  FINERACT_HIKARI_JDBC_URL: 'jdbc:mariadb://mariadb:3306/fineract_tenants'
+  FINERACT_SERVER_PORT: '8443'
+  FINERACT_HIKARI_DRIVER_CLASS_NAME: org.mariadb.jdbc.Driver

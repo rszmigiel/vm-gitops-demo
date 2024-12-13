@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: fineract
+  namespace: banking-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+spec:
+  ports:
+    - protocol: TCP
+      port: 8443
+      targetPort: 8443
+  selector:
+    app: mifos-core-banking

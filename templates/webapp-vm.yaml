@@ -1,0 +1,116 @@
+{{- range $i := until ($.Values.vm.replicas | int) }}
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: vm-mifos-webapp-{{ $i }}
+  namespace: banking-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "6"
+spec:
+  dataVolumeTemplates:
+    - metadata:
+        name: vm-mifos-webapp-{{ $i }}-volume
+      spec:
+        sourceRef:
+          kind: DataSource
+          name: {{ $.Values.vm.image }}
+          namespace: {{ $.Values.vm.image_ns }}
+        storage:
+          resources: {}
+  instancetype:
+    name: {{ $.Values.vm.size }}
+  preference:
+    name: fedora
+  running: true
+  template:
+    metadata:
+      labels:
+        app: mifos-web-app
+    spec:
+      domain:
+        devices:
+          autoattachPodInterface: false
+          disks:
+            - disk:
+                bus: virtio
+              name: cloudinitdisk
+            - disk:
+                bus: virtio
+              name: environment-disk-mifos-env
+              serial: MIFOSENV
+          interfaces:
+            - masquerade: {}
+              name: default
+      networks:
+        - name: default
+          pod: {}
+      subdomain: headless
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /
+          port: 80
+          scheme: HTTP
+        initialDelaySeconds: 60
+        periodSeconds: 5
+        successThreshold: 1
+        timeoutSeconds: 3
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /
+          port: 80
+          scheme: HTTP
+        initialDelaySeconds: 60
+        periodSeconds: 10
+        timeoutSeconds: 5
+      volumes:
+        - dataVolume:
+            name: vm-mifos-webapp-{{ $i }}-volume
+          name: rootdisk
+        - cloudInitNoCloud:
+            userData: |
+              #cloud-config
+              chpasswd:
+                expire: false
+              password: {{ randAlphaNum 24 | nospace }}
+              user: cloud-user 
+              write_files:
+                - path: /etc/containers/systemd/fineract-webapp-server.container
+                  permissions: '0644'
+                  owner: root:root
+                  content: |
+                    [Unit]
+                    Description=Fineract Web App Server
+                    Wants=network-online.target
+                    After=network-online.target
+                    RequiresMountsFor=/run/containers/storage
+
+                    [Container]
+                    Image={{ $.Values.vm.fineract_image }}
+                    ContainerName=fineract-webapp
+                    EnvironmentFile=/opt/webapp/env.sh
+                    PublishPort=80:80
+
+                    [Install]
+                    WantedBy=multi-user.target default.target
+              runcmd:
+              - mkdir /{tmp,opt}/webapp
+              - mount /dev/disk/by-id/virtio-MIFOSENV /tmp/webapp
+              - for i in /tmp/webapp/* ; do echo -en "$(basename $i)=$(cat $i)\n" >> /opt/webapp/env.sh ; done
+              - systemctl daemon-reload 
+              - systemctl enable fineract-webapp-server
+              - systemctl start --no-block fineract-webapp-server
+          name: cloudinitdisk
+        - configMap:
+            name: mifos-web-app-config
+          name: environment-disk-mifos-env
+      accessCredentials:
+        - sshPublicKey:
+            propagationMethod:
+              noCloud: {}
+            source:
+              secret:
+                secretName: bastion-key
+---
+{{- end }}

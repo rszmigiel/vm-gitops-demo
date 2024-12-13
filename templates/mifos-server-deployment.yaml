@@ -1,0 +1,84 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: mifos-server
+  namespace: banking-demo
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mifos-core-banking
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: mifos-core-banking
+    spec:
+      containers:
+        - name: container
+          image: 'docker.io/apache/fineract:latest'
+          env:
+            - name: FINERACT_HIKARI_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb
+                  key: database-user
+            - name: FINERACT_HIKARI_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb
+                  key: database-password
+            - name: FINERACT_DEFAULT_TENANTDB_UID
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb
+                  key: database-user
+            - name: FINERACT_DEFAULT_TENANTDB_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb
+                  key: database-password
+          ports:
+            - containerPort: 8443
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: mifos-env-config
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /fineract-provider/actuator/health
+              port: 8443
+              scheme: HTTPS
+            initialDelaySeconds: 180
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 3
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /fineract-provider/actuator/health
+              port: 8443
+              scheme: HTTPS
+            initialDelaySeconds: 180
+            periodSeconds: 10
+            timeoutSeconds: 5
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
+

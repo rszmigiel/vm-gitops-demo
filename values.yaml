@@ -1,0 +1,7 @@
+vm:
+ replicas: 2
+ image: fedora
+ image_ns: openshift-virtualization-os-images
+ size: u1.small
+ fineract_image: docker.io/fintecheando/web-app:master
+ 
