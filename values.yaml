@@ -1,7 +1,18 @@
-vm:
- replicas: 2
- image: fedora
- image_ns: openshift-virtualization-os-images
- size: u1.small
- fineract_image: docker.io/fintecheando/web-app:master
+appDomain: app.cnv.dxb.rhdxb.net
+webserver:
+  replicas: 2
+  image: fedora
+  image_ns: openshift-virtualization-os-images
+  size: u1.small
+  fineract_image: docker.io/fintecheando/web-app:master
  
+database:
+  image: mariadb:11.4
+  storage: 10Gi
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "1000m"
+
+backend:
+  image: docker.io/apache/fineract:latest

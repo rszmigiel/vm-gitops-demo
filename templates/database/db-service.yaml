@@ -5,7 +5,6 @@ metadata:
     template.openshift.io/expose-uri: mysql://{.spec.clusterIP}:{.spec.ports[?(.name=="mariadb")].port}
     argocd.argoproj.io/sync-wave: "1"
   name: mariadb
-  namespace: banking-demo
 spec:
   ports:
   - name: mariadb

@@ -2,7 +2,6 @@ kind: Service
 apiVersion: v1
 metadata:
   name: web-app-service
-  namespace: banking-demo
   annotations:
     argocd.argoproj.io/sync-wave: "7"
 spec:

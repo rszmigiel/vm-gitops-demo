@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mifos-database
-  namespace: banking-demo
   annotations:
     argocd.argoproj.io/sync-wave: "2"
 spec:
@@ -18,7 +17,7 @@ spec:
     spec:
       containers:
       - name: mariadb
-        image: 'mariadb:11.4'
+        image: '{{ $.Values.database.image }}'
         imagePullPolicy: IfNotPresent
         env:
         - name: MARIADB_USER
@@ -63,8 +62,8 @@ spec:
           timeoutSeconds: 1
         resources:
           requests:
-            memory: "1Gi"
-            cpu: "1000m"
+            memory: "{{ $.Values.database.resources.requests.memory }}"
+            cpu: "{{ $.Values.database.resources.requests.cpu }}"
           limits:
             memory: "5Gi"
             cpu: "2000m"
@@ -90,4 +89,4 @@ spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 10Gi
+          storage: {{ $.Values.database.storage }}

@@ -1,9 +1,8 @@
-{{- range $i := until ($.Values.vm.replicas | int) }}
+{{- range $i := until ($.Values.webserver.replicas | int) }}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
   name: vm-mifos-webapp-{{ $i }}
-  namespace: banking-demo
   annotations:
     argocd.argoproj.io/sync-wave: "6"
 spec:
@@ -13,12 +12,12 @@ spec:
       spec:
         sourceRef:
           kind: DataSource
-          name: {{ $.Values.vm.image }}
-          namespace: {{ $.Values.vm.image_ns }}
+          name: {{ $.Values.webserver.image }}
+          namespace: {{ $.Values.webserver.image_ns }}
         storage:
           resources: {}
   instancetype:
-    name: {{ $.Values.vm.size }}
+    name: {{ $.Values.webserver.size }}
   preference:
     name: fedora
   running: true
@@ -87,7 +86,7 @@ spec:
                     RequiresMountsFor=/run/containers/storage
 
                     [Container]
-                    Image={{ $.Values.vm.fineract_image }}
+                    Image={{ $.Values.webserver.fineract_image }}
                     ContainerName=fineract-webapp
                     EnvironmentFile=/opt/webapp/env.sh
                     PublishPort=80:80

@@ -2,7 +2,6 @@ kind: Route
 apiVersion: route.openshift.io/v1
 metadata:
   name: fineract-route
-  namespace: banking-demo
   annotations:
     argocd.argoproj.io/sync-wave: "5"
 spec:

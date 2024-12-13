@@ -2,7 +2,6 @@ kind: Deployment
 apiVersion: apps/v1
 metadata:
   name: mifos-server
-  namespace: banking-demo
   annotations:
     argocd.argoproj.io/sync-wave: "4"
 spec:
@@ -18,7 +17,7 @@ spec:
     spec:
       containers:
         - name: container
-          image: 'docker.io/apache/fineract:latest'
+          image: '{{ $.Values.backend.image }}'
           env:
             - name: FINERACT_HIKARI_USERNAME
               valueFrom:
