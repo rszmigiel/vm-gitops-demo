@@ -1,4 +1,4 @@
-appDomain: app.cnv.dxb.rhdxb.net
+appDomain: apps.cnv.dxb.rhdxb.net
 webserver:
   replicas: 2
   image: fedora
