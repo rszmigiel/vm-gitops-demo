@@ -2,5 +2,5 @@ apiVersion: v2
 name: mifos
 description: A demo application with mixed - container and vm - workloads.
 type: application
-version: 0.1.1
+version: 0.1.3
 appVersion: "1.16.0"
