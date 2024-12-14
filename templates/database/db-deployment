@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: mifos-database
   annotations:
@@ -9,17 +9,15 @@ spec:
   selector:
     matchLabels:
       app: mifos-database
-  serviceName: "mifos-database"
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
         app: mifos-database
     spec:
       containers:
-      - name: mariadb
-        image: '{{ $.Values.database.image }}'
-        imagePullPolicy: IfNotPresent
-        env:
+      - env:
         - name: MARIADB_USER
           valueFrom:
             secretKeyRef:
@@ -40,8 +38,8 @@ spec:
             secretKeyRef:
               key: database-name
               name: mariadb
-        ports:
-        - containerPort: 3306
+        image: '{{ $.Values.database.image }}'
+        imagePullPolicy: IfNotPresent
         livenessProbe:
           exec:
             command:
@@ -51,6 +49,9 @@ spec:
             - MYSQL_PWD=$MARIADB_ROOT_PASSWORD mariadb-admin -u root ping
           initialDelaySeconds: 30
           timeoutSeconds: 1
+        name: mariadb
+        ports:
+        - containerPort: 3306
         readinessProbe:
           exec:
             command:
@@ -74,20 +75,14 @@ spec:
           name: mariadb-config
           subPath: server-collation.cnf
           readOnly: true
-        - mountPath: /docker-entrypoint-initdb.d/init.sql
-          name: mariadb-config
+        - name: mariadb-config
+          mountPath: /docker-entrypoint-initdb.d/init.sql
           subPath: init.sql
           readOnly: true
       volumes:
+      - name: mariadb-data
+        persistentVolumeClaim:
+          claimName: mariadb
       - name: mariadb-config
         configMap:
           name: mifos-db-config
-  volumeClaimTemplates:
-  - metadata:
-      name: mariadb-data
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      storageClassName: {{ $.Values.database.storageclass }}
-      resources:
-        requests:
-          storage: {{ $.Values.database.storage }}
