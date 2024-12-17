@@ -1,20 +1,24 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: banking-demo-app
-  namespace: openshift-gitops
+  name: test
 spec:
-  project: default
+  destination:
+    name: ''
+    namespace: banking-demos
+    server: https://kubernetes.default.svc
   source:
-    repoURL: https://github.com/linusali/vm-gitops-demo.git
     path: .
+    repoURL: https://github.com/linusali/vm-gitops-demo.git
     targetRevision: HEAD
     helm:
       valueFiles:
         - values.yaml
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: banking-demo
+      parameters:
+        - name: webserver.replicas
+          value: 3
+  sources: []
+  project: default
   syncPolicy:
     automated:
       prune: true
