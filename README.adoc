@@ -1,0 +1,86 @@
+= VM GitOps Demo
+Mohammed Salih <msalih@redhat.com>
+:revnumber: 1
+:revdate: 17-12-2024
+:toc:
+:toclevels: 4
+:sectnums:
+:sectnumlevels: 4
+:icons: font
+:source-highlighter: prettify
+:data-uri:
+
+This repository demonstrates deploying a hybrid application on OpenShift using GitOps. It includes a VM-based web server, a containerized backend, and a database, showcasing how legacy and modern workloads can coexist.
+
+It uses Helm charts for easily scaling virtual machines, but deployed through OpenShift GitOps (ArgoCD) rather than using the Helm in OpenShift. 
+
+== Prerequisites
+- OpenShift Cluster with a RWX capable Storage
+- OpenShift Virtualization should be enabled
+- OpenShift GitOps should be installed from the operator hub
+- CLI Tools - `oc`, `helm`, `argocd` and `git` should be available on your workstation to manage the application deployment
+
+== Application deployment
+=== Prepare
+[source,yaml]
+----
+oc new-project banking-demo
+oc apply -f argo-role.yaml
+oc apply -f argo-role-rolebinding.yaml
+----
+
+=== Verify Helm variables
+Make sure the values specified in `values.yaml` and `argo-application.yaml` are as desired.
+[source,yaml]
+include::values.yaml[]
+
+[source,yaml]
+include::argo-application.yaml[]
+
+Create the ArgoCD application
+[source,bash]
+----
+oc apply -f argo-application.yaml
+----
+
+=== Monitor the appliation deployment
+You can monitor the application deployment using CLI
+
+[source,bash]
+oc project banking-demo
+
+==== List pods
+Using CLI list the pods deployed in the current namespace `banking-demo`
+[source,bash]
+----
+oc get pods 
+----
+
+==== List PVC
+List Persistant storage deployed 
+[source,bash]
+----
+oc get pvc
+----
+
+==== List Virtual Machines
+List virtual machines deployed. Since the deployment is done in batches based on the dependencies, it might take a while before the virtual machine show up
+
+[source,bash]
+----
+oc get vms
+----
+
+==== Access the application
+Get the URL to access the deployed Mifo-X application's frontend
+[source,bash]
+----
+oc get routes
+----
+
+== Interesting facts about this deployment
+
+. Virtual machine can be scaled easily by modifying `webserver.replicas` count
+. Virtual machine uses cloud-init scripts to instantiate itself
+. Virtual machine uses Liveness and Readiness probes to monitor itself and reboot in case of any failure
+. Virtual machine uses OpenShift's services and routes to expose itself to the external world 
