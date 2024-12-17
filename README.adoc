@@ -31,11 +31,60 @@ oc apply -f argo-role-rolebinding.yaml
 
 === Verify Helm variables
 Make sure the values specified in `values.yaml` and `argo-application.yaml` are as desired.
-[source,yaml]
-include::values.yaml[]
 
+.File: values.yaml
 [source,yaml]
-include::argo-application.yaml[]
+----
+appDomain: apps.cnv.dxb.rhdxb.net
+webserver:
+  replicas: 2
+  image: fedora
+  image_ns: openshift-virtualization-os-images
+  size: u1.small
+  fineract_image: docker.io/fintecheando/web-app:master
+ 
+database:
+  image: mariadb:11.4
+  storage: 10Gi
+  storageclass: ocs-storagecluster-cephfs
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "1000m"
+
+backend:
+  image: docker.io/apache/fineract:latest
+----
+
+.File: argo-application.yaml
+[source,yaml]
+----
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mifos-x
+spec:
+  destination:
+    name: ''
+    namespace: banking-demo
+    server: https://kubernetes.default.svc
+  source:
+    path: .
+    repoURL: https://github.com/linusali/vm-gitops-demo.git
+    targetRevision: HEAD
+    helm:
+      valueFiles:
+        - values.yaml
+      parameters:
+        - name: webserver.replicas
+          value: "3"
+  sources: []
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+----
 
 Create the ArgoCD application
 [source,bash]
