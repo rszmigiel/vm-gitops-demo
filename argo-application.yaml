@@ -5,7 +5,7 @@ metadata:
 spec:
   destination:
     name: ''
-    namespace: banking-demos
+    namespace: banking-demo
     server: https://kubernetes.default.svc
   source:
     path: .
