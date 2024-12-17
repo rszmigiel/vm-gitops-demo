@@ -16,7 +16,7 @@ spec:
         - values.yaml
       parameters:
         - name: webserver.replicas
-          value: 3
+          value: "3"
   sources: []
   project: default
   syncPolicy:
