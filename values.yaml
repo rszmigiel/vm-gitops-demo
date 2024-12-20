@@ -1,4 +1,4 @@
-appDomain: apps.cnv.dxb.rhdxb.net
+appDomain: apps.ocp4.openshift.one
 webserver:
   replicas: 2
   image: fedora
