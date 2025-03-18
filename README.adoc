@@ -22,11 +22,16 @@ It uses Helm charts for easily scaling virtual machines, but deployed through Op
 
 == Application deployment
 === Prepare
+We are starting a new project called `banking-demo`. First, we will create a system group called `cluster-admins` in OpenShift. Next, we will add the `admin` user to the `cluster-admins` group. Finally, we will label the new namespace `banking-demo` so that the default GitOps (ArgoCD) instance running in `openshift-gitops` namesapce can manage the artifacts within this namespace. 
+
+Now the `admin` user can login using SSO option of ArgoCD.
+
 [source,yaml]
 ----
 oc new-project banking-demo
-oc apply -f argo-role.yaml
-oc apply -f argo-role-rolebinding.yaml
+oc adm groups new cluster-admins
+oc adm groups add-users cluster-admins admin
+oc label namespace banking-demo argocd.argoproj.io/managed-by=openshift-gitops
 ----
 
 === Verify Helm variables
