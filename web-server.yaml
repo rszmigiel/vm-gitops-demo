@@ -16,7 +16,7 @@ spec:
             requests:
               storage: '32212254720'
   instancetype:
-    name: u1.medium
+    name: u1.large
   preference:
     name: fedora
   runStrategy: Always
