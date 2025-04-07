@@ -79,7 +79,7 @@ spec:
 
               runcmd:
                 - mkdir -p /opt/app
-                - curl -o /opt/app/app.py https://gist.githubusercontent.com/your-username/your-gist-id/raw/app.py
+                - curl -o /opt/app/app.py https://raw.githubusercontent.com/linusali/vm-gitops-demo/refs/heads/simple/web/app.py
                 - chmod +x /opt/app/app.py
                 - pip3 install flask mysql-connector-python
                 - systemctl daemon-reload
