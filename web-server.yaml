@@ -1,0 +1,88 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: web-server
+spec:
+  dataVolumeTemplates:
+    - metadata:
+        name: web-server-volume
+      spec:
+        sourceRef:
+          kind: DataSource
+          name: fedora
+          namespace: openshift-virtualization-os-images
+        storage:
+          resources:
+            requests:
+              storage: '32212254720'
+  instancetype:
+    name: u1.medium
+  preference:
+    name: fedora
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        network.kubevirt.io/headlessService: headless
+        app: web
+    spec:
+      domain:
+        devices:
+          autoattachPodInterface: false
+          disks: []
+          interfaces:
+            - masquerade: {}
+              name: default
+      networks:
+        - name: default
+          pod: {}
+      subdomain: headless
+      volumes:
+        - dataVolume:
+            name: web-server-volume
+          name: rootdisk
+        - cloudInitNoCloud:
+            userData: |
+              #cloud-config
+              chpasswd:
+                expire: false
+              password: redhat123
+              user: fedora
+              package_update: true
+              package_upgrade: true
+              packages:
+                - python3
+                - python3-pip
+                - curl
+
+              write_files:
+                - path: /etc/systemd/system/flaskapp.service
+                  permissions: '0644'
+                  content: |
+                    [Unit]
+                    Description=Simple Flask Application
+                    After=network.target
+
+                    [Service]
+                    EnvironmentFile=/opt/app/flask.env
+                    ExecStart=/usr/bin/python3 /opt/app/app.py
+                    Restart=always
+                    User=root
+
+                    [Install]
+                    WantedBy=multi-user.target
+
+                - path: /opt/app/flask.env
+                  permissions: '0644'
+                  content: |
+                    DB_HOST=db-vm.internal
+
+              runcmd:
+                - mkdir -p /opt/app
+                - curl -o /opt/app/app.py https://gist.githubusercontent.com/your-username/your-gist-id/raw/app.py
+                - chmod +x /opt/app/app.py
+                - pip3 install flask mysql-connector-python
+                - systemctl daemon-reload
+                - systemctl enable flaskapp.service
+                - systemctl start flaskapp.service
+          name: cloudinitdisk

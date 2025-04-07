@@ -1,0 +1,73 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: db-server
+spec:
+  dataVolumeTemplates:
+    - metadata:
+        name: db-server-volume
+      spec:
+        sourceRef:
+          kind: DataSource
+          name: fedora
+          namespace: openshift-virtualization-os-images
+        storage:
+          resources:
+            requests:
+              storage: '32212254720'
+  instancetype:
+    name: u1.medium
+  preference:
+    name: fedora
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        network.kubevirt.io/headlessService: headless
+        app: db
+    spec:
+      domain:
+        devices:
+          autoattachPodInterface: false
+          disks: []
+          interfaces:
+            - masquerade: {}
+              name: default
+      networks:
+        - name: default
+          pod: {}
+      subdomain: headless
+      volumes:
+        - dataVolume:
+            name: db-server-volume
+          name: rootdisk
+        - cloudInitNoCloud:
+            userData: |
+              #cloud-config
+              chpasswd:
+                expire: false
+              password: redhat123
+              user: fedora
+              package_update: true
+              package_upgrade: true
+              packages:
+                - mariadb-server
+
+              write_files:
+                - path: /etc/my.cnf.d/0-remote.cnf
+                  permissions: '0644'
+                  content: |
+                    [mysqld]
+                    bind-address = 0.0.0.0
+
+              runcmd:
+                - systemctl start mariadb
+                - systemctl enable mariadb
+                - sleep 5  # wait a moment for MariaDB to start
+                - mysql -e "CREATE DATABASE sampledb;"
+                - mysql -e "CREATE USER 'dbuser'@'%' IDENTIFIED BY 'dbpass';"
+                - mysql -e "GRANT ALL PRIVILEGES ON sampledb.* TO 'dbuser'@'%'; FLUSH PRIVILEGES;"
+                - mysql -e "USE sampledb; CREATE TABLE sample_table (id INT AUTO_INCREMENT PRIMARY KEY, data VARCHAR(255));"
+                - mysql -e "USE sampledb; INSERT INTO sample_table (data) VALUES ('Hello from DB');"
+                - sleep 1
+          name: cloudinitdisk
