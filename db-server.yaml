@@ -15,8 +15,6 @@ spec:
           resources:
             requests:
               storage: '32212254720'
-  instancetype:
-    name: u1.medium
   preference:
     name: fedora
   runStrategy: Always
@@ -27,6 +25,21 @@ spec:
         app: db
     spec:
       domain:
+        cpu:
+          cores: 1
+          sockets: 1
+          threads: 1
+        memory:
+          guest: 2Gi
+        features:
+          acpi: {}
+          smm:
+            enabled: true
+        firmware:
+          bootloader:
+            efi: {}
+        machine:
+          type: pc-q35-rhel9.4.0
         devices:
           autoattachPodInterface: false
           interfaces:
