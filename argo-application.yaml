@@ -9,8 +9,8 @@ spec:
     server: https://kubernetes.default.svc
   source:
     path: .
-    repoURL: https://github.com/linusali/vm-gitops-demo.git
-    targetRevision: HEAD
+    repoURL: https://github.com/rszmigiel/vm-gitops-demo.git
+    targetRevision: rafals-env
     helm:
       valueFiles:
         - values.yaml
