@@ -1,4 +1,4 @@
-appDomain: apps.cnv.dxb.rhdxb.net
+appDomain: apps.ocp4.openshift.one
 webserver:
   replicas: 2
   image: fedora
@@ -9,7 +9,7 @@ webserver:
 database:
   image: mariadb:11.4
   storage: 10Gi
-  storageclass: ocs-storagecluster-cephfs
+  storageclass: freenas-nfs-csi
   resources:
     requests:
       memory: "1Gi"
