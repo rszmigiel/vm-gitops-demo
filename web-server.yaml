@@ -30,7 +30,7 @@ spec:
           sockets: 1
           threads: 1
         memory:
-          guest: 3Gi
+          guest: 1Gi
         features:
           acpi: {}
           smm:
